@@ -6,6 +6,16 @@ namespace ProdutorRuralMonitoramento.Domain.Entities;
 public class RegraAlerta : BaseEntity
 {
     /// <summary>
+    /// Id do produtor dono da regra
+    /// </summary>
+    public Guid ProdutorId { get; set; }
+    
+    /// <summary>
+    /// Id do talhão específico (NULL = todas do produtor)
+    /// </summary>
+    public Guid? TalhaoId { get; set; }
+    
+    /// <summary>
     /// Nome identificador da regra
     /// </summary>
     public string Nome { get; set; } = string.Empty;
@@ -21,9 +31,9 @@ public class RegraAlerta : BaseEntity
     public string Campo { get; set; } = string.Empty;
     
     /// <summary>
-    /// Operador de comparação (menor, maior, igual, etc.)
+    /// Operador de comparação
     /// </summary>
-    public string Operador { get; set; } = string.Empty;
+    public Operador Operador { get; set; }
     
     /// <summary>
     /// Valor limite para disparo do alerta
@@ -59,4 +69,66 @@ public class RegraAlerta : BaseEntity
     /// Alertas gerados por esta regra
     /// </summary>
     public ICollection<Alerta> Alertas { get; set; } = new List<Alerta>();
+    
+    /// <summary>
+    /// Construtor padrão para EF
+    /// </summary>
+    protected RegraAlerta() { }
+    
+    /// <summary>
+    /// Construtor com parâmetros
+    /// </summary>
+    public RegraAlerta(
+        Guid produtorId,
+        Guid? talhaoId,
+        string nome,
+        string? descricao,
+        string campo,
+        Operador operador,
+        decimal valor,
+        TipoAlerta tipoAlerta,
+        Severidade severidade)
+    {
+        ProdutorId = produtorId;
+        TalhaoId = talhaoId;
+        Nome = nome;
+        Descricao = descricao;
+        Campo = campo;
+        Operador = operador;
+        Valor = valor;
+        TipoAlerta = tipoAlerta;
+        Severidade = severidade;
+        Ativo = true;
+    }
+    
+    /// <summary>
+    /// Atualiza os dados da regra
+    /// </summary>
+    public void Atualizar(
+        string nome,
+        string? descricao,
+        string campo,
+        Operador operador,
+        decimal valor,
+        TipoAlerta tipoAlerta,
+        Severidade severidade)
+    {
+        Nome = nome;
+        Descricao = descricao;
+        Campo = campo;
+        Operador = operador;
+        Valor = valor;
+        TipoAlerta = tipoAlerta;
+        Severidade = severidade;
+    }
+    
+    /// <summary>
+    /// Ativa a regra
+    /// </summary>
+    public void Ativar() => Ativo = true;
+    
+    /// <summary>
+    /// Desativa a regra
+    /// </summary>
+    public void Desativar() => Ativo = false;
 }

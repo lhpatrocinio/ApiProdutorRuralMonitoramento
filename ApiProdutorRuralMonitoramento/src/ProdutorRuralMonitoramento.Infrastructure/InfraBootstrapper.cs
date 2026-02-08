@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ProdutorRuralMonitoramento.Application.Repository;
+using ProdutorRuralMonitoramento.Application.Services.Interfaces;
+using ProdutorRuralMonitoramento.Domain.Interfaces;
 using ProdutorRuralMonitoramento.Infrastructure.DataBase.Repository;
+using ProdutorRuralMonitoramento.Infrastructure.Messaging;
 
 namespace ProdutorRuralMonitoramento.Infrastructure
 {
@@ -9,7 +11,17 @@ namespace ProdutorRuralMonitoramento.Infrastructure
     {
         public static void Register(IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IProdutorRuralMonitoramentoRepository, ProdutorRuralMonitoramentoRepository>();         
+            // Repositórios
+            services.AddScoped<IAlertaRepository, AlertaRepository>();
+            services.AddScoped<IRegraAlertaRepository, RegraAlertaRepository>();
+            services.AddScoped<IHistoricoStatusTalhaoRepository, HistoricoStatusTalhaoRepository>();
+            
+            // RabbitMQ - TODO: Habilitar quando RabbitMQ estiver rodando
+            // services.AddRabbitMq(configuration);
+            // services.AddSingleton<IAlertaEventPublisher, AlertaCreatedPublisher>();
+            
+            // Background Services - TODO: Habilitar quando RabbitMQ estiver rodando
+            // services.AddHostedService<SensorDataConsumer>();
         }
     }
 }

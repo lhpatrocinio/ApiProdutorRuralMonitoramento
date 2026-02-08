@@ -64,10 +64,31 @@ builder.Services.AddDistributedTracing(builder.Configuration);
 
 var app = builder.Build();
 
+// Developer Exception Page apenas em ambiente de desenvolvimento
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+
+// Middleware para capturar e logar exceções
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Erro não tratado na requisição {Path}", context.Request.Path);
+        throw;
+    }
+});
+
 app.ExecuteMigrations();
 var apiVersionDescriptionProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
 
-app.UseAuthentication();                        // 1�: popula HttpContext.User
+app.UseAuthentication();                        // 1�: popula HttpContext.User
 app.UseMiddleware<RoleAuthorizationMiddleware>();
 app.UseCorrelationId();
 app.UseELKIntegration();
@@ -78,7 +99,7 @@ app.UseCors("AllowAll");
 app.UsePrometheusMonitoring();
 
 app.UseVersionedSwagger(apiVersionDescriptionProvider);
-app.UseAuthorization();                         // 3�: aplica [Authorize]
+app.UseAuthorization();                         // 3�: aplica [Authorize]
 //app.UseHttpsRedirection();
 app.MapControllers();
 

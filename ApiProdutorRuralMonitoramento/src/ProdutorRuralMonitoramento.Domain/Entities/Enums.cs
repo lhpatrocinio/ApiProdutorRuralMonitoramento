@@ -8,7 +8,9 @@ public enum TipoAlerta
     Seca = 1,
     Temperatura = 2,
     Precipitacao = 3,
-    Geada = 4
+    Geada = 4,
+    Umidade = 5,
+    Vento = 6
 }
 
 /// <summary>
@@ -27,11 +29,14 @@ public enum Severidade
 /// </summary>
 public enum Operador
 {
-    MenorQue,       // <
-    MaiorQue,       // >
-    MenorOuIgual,   // <=
-    MaiorOuIgual,   // >=
-    Igual           // ==
+    Igual = 0,
+    Diferente = 1,
+    Maior = 2,
+    MaiorOuIgual = 3,
+    Menor = 4,
+    MenorOuIgual = 5,
+    Entre = 6,
+    ForaDe = 7
 }
 
 /// <summary>
@@ -44,4 +49,12 @@ public static class CampoMonitorado
     public const string Precipitacao = "precipitacao";
     public const string UmidadeAr = "umidade_ar";
     public const string VelocidadeVento = "velocidade_vento";
+    public const string Umidade = "umidade";
+    public const string RadiacaoSolar = "radiacao_solar";
+    
+    public static readonly string[] TodosCampos = new[]
+    {
+        UmidadeSolo, Temperatura, Precipitacao, UmidadeAr, 
+        VelocidadeVento, Umidade, RadiacaoSolar
+    };
 }

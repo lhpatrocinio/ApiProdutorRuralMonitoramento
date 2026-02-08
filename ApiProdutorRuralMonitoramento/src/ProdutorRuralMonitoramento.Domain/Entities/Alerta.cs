@@ -23,7 +23,12 @@ public class Alerta
     /// <summary>
     /// Id da regra que gerou o alerta
     /// </summary>
-    public Guid RegraId { get; set; }
+    public Guid RegraAlertaId { get; set; }
+    
+    /// <summary>
+    /// Id da leitura que disparou o alerta
+    /// </summary>
+    public Guid? LeituraId { get; set; }
     
     /// <summary>
     /// Tipo do alerta (Seca, Temperatura, etc.)
@@ -46,14 +51,9 @@ public class Alerta
     public string? Mensagem { get; set; }
     
     /// <summary>
-    /// Valor detectado que disparou o alerta
+    /// Valor da leitura que disparou o alerta
     /// </summary>
-    public decimal? ValorDetectado { get; set; }
-    
-    /// <summary>
-    /// Valor limite configurado na regra
-    /// </summary>
-    public decimal? ValorLimite { get; set; }
+    public decimal? ValorLeitura { get; set; }
     
     /// <summary>
     /// Indica se o alerta foi lido
@@ -93,7 +93,41 @@ public class Alerta
     /// <summary>
     /// Regra que gerou o alerta
     /// </summary>
-    public RegraAlerta? Regra { get; set; }
+    public RegraAlerta? RegraAlerta { get; set; }
+    
+    /// <summary>
+    /// Construtor padrão para EF
+    /// </summary>
+    protected Alerta() { }
+    
+    /// <summary>
+    /// Construtor com parâmetros
+    /// </summary>
+    public Alerta(
+        Guid produtorId,
+        Guid talhaoId,
+        Guid regraAlertaId,
+        TipoAlerta tipoAlerta,
+        Severidade severidade,
+        string titulo,
+        string? mensagem,
+        decimal? valorLeitura = null,
+        Guid? leituraId = null)
+    {
+        Id = Guid.NewGuid();
+        ProdutorId = produtorId;
+        TalhaoId = talhaoId;
+        RegraAlertaId = regraAlertaId;
+        TipoAlerta = tipoAlerta;
+        Severidade = severidade;
+        Titulo = titulo;
+        Mensagem = mensagem;
+        ValorLeitura = valorLeitura;
+        LeituraId = leituraId;
+        Lido = false;
+        Resolvido = false;
+        CreatedAt = DateTime.UtcNow;
+    }
     
     /// <summary>
     /// Marca o alerta como lido

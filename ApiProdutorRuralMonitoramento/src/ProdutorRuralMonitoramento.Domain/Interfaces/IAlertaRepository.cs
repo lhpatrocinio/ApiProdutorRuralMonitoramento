@@ -21,4 +21,5 @@ public interface IAlertaRepository
     Task<int> CountNaoResolvidosAsync(Guid produtorId);
     Task MarcarComoLidoAsync(Guid alertaId);
     Task MarcarTodosComoLidosAsync(Guid produtorId);
+    Task<Alerta?> GetNaoResolvidoByRegraETalhaoAsync(Guid regraId, Guid talhaoId);
 }

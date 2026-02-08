@@ -12,7 +12,28 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Migration
             using (var scope = app.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                db.Database.Migrate();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>();
+                
+                try
+                {
+                    // Verifica se há migrações pendentes
+                    var pendingMigrations = db.Database.GetPendingMigrations();
+                    if (pendingMigrations.Any())
+                    {
+                        logger.LogInformation("Aplicando {Count} migrações pendentes...", pendingMigrations.Count());
+                        db.Database.Migrate();
+                    }
+                    else
+                    {
+                        // Apenas garante que o banco existe (não cria tabelas se já existem)
+                        logger.LogInformation("Nenhuma migração pendente. Verificando conexão com o banco...");
+                        db.Database.CanConnect();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Erro ao executar migrações. Continuando sem migrações automáticas.");
+                }
             }
         }
     }
