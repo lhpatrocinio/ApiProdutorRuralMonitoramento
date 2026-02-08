@@ -15,8 +15,7 @@ public class AlertaCreatedPublisher : IAlertaEventPublisher
     private readonly ILogger<AlertaCreatedPublisher> _logger;
     private readonly IConnection _connection;
     private readonly IChannel _channel;
-    private const string ExchangeName = "agro.alertas.exchange";
-    private const string RoutingKey = "alerta.created";
+    private const string ExchangeName = "agro.events";
 
     public AlertaCreatedPublisher(
         ILogger<AlertaCreatedPublisher> logger,
@@ -26,10 +25,10 @@ public class AlertaCreatedPublisher : IAlertaEventPublisher
         _connection = connection;
         _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
         
-        // Declarar exchange
+        // Declarar exchange (Topic para compatibilidade com outros serviços)
         _channel.ExchangeDeclareAsync(
             exchange: ExchangeName,
-            type: ExchangeType.Direct,
+            type: ExchangeType.Topic,
             durable: true,
             autoDelete: false).GetAwaiter().GetResult();
     }
@@ -60,9 +59,12 @@ public class AlertaCreatedPublisher : IAlertaEventPublisher
                 Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds())
             };
 
+            // Routing key dinâmica para compatibilidade com pattern alert.created.#
+            var routingKey = $"alert.created.{alerta.TalhaoId}";
+
             await _channel.BasicPublishAsync(
                 exchange: ExchangeName,
-                routingKey: RoutingKey,
+                routingKey: routingKey,
                 mandatory: false,
                 basicProperties: properties,
                 body: body);

@@ -19,7 +19,7 @@ using ProdutorRuralMonitoramento.Infrastructure.Monitoring;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddSerilogConfiguration();
-builder.WebHost.UseUrls("http://*:80");
+builder.WebHost.UseUrls("http://*:5003");
 
 builder.Services.AddMvcCore(options => options.AddLogRequestFilter());
 builder.Services.AddVersioning();

@@ -19,7 +19,8 @@ public class SensorDataConsumer : BackgroundService
     private readonly IConnection _connection;
     private readonly IChannel _channel;
     private const string QueueName = "monitoramento.sensor.data";
-    private const string ExchangeName = "agro.sensores.exchange";
+    private const string ExchangeName = "agro.events";
+    private const string RoutingKey = "sensor.data.#";
 
     public SensorDataConsumer(
         ILogger<SensorDataConsumer> logger,
@@ -41,7 +42,7 @@ public class SensorDataConsumer : BackgroundService
             // Declarar exchange e queue
             await _channel.ExchangeDeclareAsync(
                 exchange: ExchangeName,
-                type: ExchangeType.Direct,
+                type: ExchangeType.Topic,
                 durable: true,
                 autoDelete: false);
 
@@ -54,7 +55,7 @@ public class SensorDataConsumer : BackgroundService
             await _channel.QueueBindAsync(
                 queue: QueueName,
                 exchange: ExchangeName,
-                routingKey: "sensor.leitura.created");
+                routingKey: RoutingKey);
 
             // Configurar QoS
             await _channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false);
@@ -113,20 +114,28 @@ public class SensorDataConsumer : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var motorAlertas = scope.ServiceProvider.GetRequiredService<IMotorAlertasService>();
 
-        var sensorEvent = new SensorDataEvent(
-            LeituraId: message.LeituraId,
-            SensorId: message.SensorId,
-            TalhaoId: message.TalhaoId,
-            TipoLeitura: message.TipoLeitura,
-            Valor: message.Valor,
-            DataLeitura: message.DataLeitura
-        );
+        var sensorEvent = new SensorDataEvent
+        {
+            EventId = message.EventId,
+            EventDateTime = message.EventDateTime,
+            LeituraId = message.LeituraId,
+            TalhaoId = message.TalhaoId,
+            SensorId = message.SensorId,
+            CodigoSensor = message.CodigoSensor,
+            UmidadeSolo = message.UmidadeSolo,
+            Temperatura = message.Temperatura,
+            Precipitacao = message.Precipitacao,
+            UmidadeAr = message.UmidadeAr,
+            VelocidadeVento = message.VelocidadeVento,
+            RadiacaoSolar = message.RadiacaoSolar,
+            DataHoraLeitura = message.DataHoraLeitura
+        };
 
         await motorAlertas.ProcessarLeituraAsync(sensorEvent);
         
         _logger.LogInformation(
-            "Leitura processada - Sensor: {SensorId}, Tipo: {Tipo}, Valor: {Valor}",
-            message.SensorId, message.TipoLeitura, message.Valor);
+            "Leitura processada - TalhaoId: {TalhaoId}, Umidade: {Umidade}%, Temp: {Temp}°C",
+            message.TalhaoId, message.UmidadeSolo, message.Temperatura);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
@@ -144,13 +153,21 @@ public class SensorDataConsumer : BackgroundService
 }
 
 /// <summary>
-/// Mensagem recebida da fila de sensores
+/// Mensagem recebida da fila de sensores (alinhada com SensorDataReceivedEvent do Sensores)
 /// </summary>
-public record SensorDataMessage(
-    Guid LeituraId,
-    Guid SensorId,
-    Guid TalhaoId,
-    string TipoLeitura,
-    decimal Valor,
-    DateTime DataLeitura
-);
+public record SensorDataMessage
+{
+    public Guid EventId { get; init; }
+    public DateTime EventDateTime { get; init; }
+    public Guid LeituraId { get; init; }
+    public Guid TalhaoId { get; init; }
+    public Guid? SensorId { get; init; }
+    public string? CodigoSensor { get; init; }
+    public decimal? UmidadeSolo { get; init; }
+    public decimal? Temperatura { get; init; }
+    public decimal? Precipitacao { get; init; }
+    public decimal? UmidadeAr { get; init; }
+    public decimal? VelocidadeVento { get; init; }
+    public decimal? RadiacaoSolar { get; init; }
+    public DateTime DataHoraLeitura { get; init; }
+}

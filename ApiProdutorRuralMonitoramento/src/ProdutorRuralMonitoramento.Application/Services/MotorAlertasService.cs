@@ -36,8 +36,8 @@ public class MotorAlertasService : IMotorAlertasService
     public async Task ProcessarLeituraAsync(SensorDataEvent leitura)
     {
         _logger.LogInformation(
-            "Processando leitura do sensor {SensorId} no talhão {TalhaoId}: {TipoLeitura} = {Valor}",
-            leitura.SensorId, leitura.TalhaoId, leitura.TipoLeitura, leitura.Valor);
+            "Processando leitura do talhão {TalhaoId}: Umidade={Umidade}%, Temp={Temp}°C, Precip={Precip}mm",
+            leitura.TalhaoId, leitura.UmidadeSolo, leitura.Temperatura, leitura.Precipitacao);
 
         try
         {
@@ -50,29 +50,46 @@ public class MotorAlertasService : IMotorAlertasService
                 return;
             }
 
-            // Filtrar regras relevantes para o campo da leitura
-            var regrasRelevantes = regrasAtivas
-                .Where(r => r.Campo.Equals(leitura.TipoLeitura, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            _logger.LogDebug("Encontradas {Count} regras relevantes para {TipoLeitura}", 
-                regrasRelevantes.Count, leitura.TipoLeitura);
-
-            foreach (var regra in regrasRelevantes)
-            {
-                if (AvaliarRegra(regra, leitura.Valor))
-                {
-                    await CriarAlertaAsync(regra, leitura);
-                }
-            }
+            // Processar cada campo da leitura contra as regras relevantes
+            await ProcessarCampoAsync("umidade_solo", leitura.UmidadeSolo, regrasAtivas, leitura);
+            await ProcessarCampoAsync("temperatura", leitura.Temperatura, regrasAtivas, leitura);
+            await ProcessarCampoAsync("precipitacao", leitura.Precipitacao, regrasAtivas, leitura);
+            await ProcessarCampoAsync("umidade_ar", leitura.UmidadeAr, regrasAtivas, leitura);
+            await ProcessarCampoAsync("velocidade_vento", leitura.VelocidadeVento, regrasAtivas, leitura);
+            await ProcessarCampoAsync("radiacao_solar", leitura.RadiacaoSolar, regrasAtivas, leitura);
 
             // Atualizar histórico de status do talhão
             await AtualizarHistoricoTalhaoAsync(leitura);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro ao processar leitura do sensor {SensorId}", leitura.SensorId);
+            _logger.LogError(ex, "Erro ao processar leitura do talhão {TalhaoId}", leitura.TalhaoId);
             throw;
+        }
+    }
+
+    /// <summary>
+    /// Processa um campo específico contra as regras aplicáveis
+    /// </summary>
+    private async Task ProcessarCampoAsync(
+        string nomeCampo, 
+        decimal? valor, 
+        IEnumerable<RegraAlerta> regras, 
+        SensorDataEvent leitura)
+    {
+        if (!valor.HasValue) return;
+
+        var regrasRelevantes = regras
+            .Where(r => r.Campo.Equals(nomeCampo, StringComparison.OrdinalIgnoreCase) ||
+                        r.Campo.Equals("todos", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        foreach (var regra in regrasRelevantes)
+        {
+            if (AvaliarRegra(regra, valor.Value))
+            {
+                await CriarAlertaAsync(regra, leitura, nomeCampo, valor.Value);
+            }
         }
     }
 
@@ -107,7 +124,7 @@ public class MotorAlertasService : IMotorAlertasService
     /// <summary>
     /// Cria um novo alerta e publica evento via RabbitMQ
     /// </summary>
-    private async Task CriarAlertaAsync(RegraAlerta regra, SensorDataEvent leitura)
+    private async Task CriarAlertaAsync(RegraAlerta regra, SensorDataEvent leitura, string campo, decimal valor)
     {
         // Verificar se já existe alerta não resolvido para esta regra/talhão
         var alertaExistente = await _alertaRepository
@@ -121,7 +138,7 @@ public class MotorAlertasService : IMotorAlertasService
             return;
         }
 
-        var mensagem = GerarMensagemAlerta(regra, leitura);
+        var mensagem = GerarMensagemAlerta(regra, campo, valor);
         
         var alerta = new Alerta(
             produtorId: regra.ProdutorId,
@@ -131,7 +148,7 @@ public class MotorAlertasService : IMotorAlertasService
             severidade: regra.Severidade,
             titulo: $"Alerta: {regra.Nome}",
             mensagem: mensagem,
-            valorLeitura: leitura.Valor,
+            valorLeitura: valor,
             leituraId: leitura.LeituraId
         );
 
@@ -157,7 +174,7 @@ public class MotorAlertasService : IMotorAlertasService
     /// <summary>
     /// Gera uma mensagem descritiva para o alerta
     /// </summary>
-    private static string GerarMensagemAlerta(RegraAlerta regra, SensorDataEvent leitura)
+    private static string GerarMensagemAlerta(RegraAlerta regra, string campo, decimal valor)
     {
         var operadorDescricao = regra.Operador switch
         {
@@ -170,18 +187,20 @@ public class MotorAlertasService : IMotorAlertasService
             _ => regra.Operador.ToString()
         };
 
-        var unidade = leitura.TipoLeitura.ToLower() switch
+        var unidade = campo.ToLower() switch
         {
             "temperatura" => "°C",
-            "umidade" => "%",
-            "umidadesolo" or "umidade_solo" => "%",
+            "umidade" or "umidade_ar" => "%",
+            "umidade_solo" => "%",
             "precipitacao" => "mm",
-            "velocidadevento" or "velocidade_vento" => "km/h",
-            "radiacao" or "radiacaosolar" => "W/m²",
+            "velocidade_vento" => "km/h",
+            "radiacao_solar" => "W/m²",
             _ => ""
         };
 
-        return $"Leitura de {leitura.TipoLeitura} registrou valor de {leitura.Valor}{unidade}, " +
+        var campoDescricao = campo.Replace("_", " ").ToLower();
+        
+        return $"Leitura de {campoDescricao} registrou valor de {valor}{unidade}, " +
                $"que está {operadorDescricao} o limite configurado de {regra.Valor}{unidade}. " +
                $"Regra: {regra.Descricao ?? regra.Nome}";
     }
@@ -205,10 +224,12 @@ public class MotorAlertasService : IMotorAlertasService
                 return;
             }
 
+            var descricao = $"Umidade: {leitura.UmidadeSolo ?? 0}%, Temp: {leitura.Temperatura ?? 0}°C";
+            
             var historico = new HistoricoStatusTalhao(
                 talhaoId: leitura.TalhaoId,
                 status: status,
-                descricao: $"Status atualizado com base em leitura de {leitura.TipoLeitura}: {leitura.Valor}",
+                descricao: descricao,
                 leituraId: leitura.LeituraId
             );
 
@@ -229,18 +250,29 @@ public class MotorAlertasService : IMotorAlertasService
     /// </summary>
     private static string DeterminarStatusTalhao(SensorDataEvent leitura)
     {
-        // Lógica simplificada para determinar status
-        var tipoLeitura = leitura.TipoLeitura.ToLower();
-        var valor = leitura.Valor;
-
-        return tipoLeitura switch
+        // Verificar temperatura primeiro (condições mais críticas)
+        if (leitura.Temperatura.HasValue)
         {
-            "temperatura" when valor > 35 => "Temperatura Alta",
-            "temperatura" when valor < 5 => "Temperatura Baixa",
-            "umidadesolo" or "umidade_solo" when valor < 20 => "Solo Seco",
-            "umidadesolo" or "umidade_solo" when valor > 80 => "Solo Encharcado",
-            "precipitacao" when valor > 50 => "Chuva Intensa",
-            _ => "Normal"
-        };
+            if (leitura.Temperatura > 40) return "Crítico - Temperatura Extrema";
+            if (leitura.Temperatura > 35) return "Alerta - Temperatura Alta";
+            if (leitura.Temperatura < 5) return "Alerta - Risco de Geada";
+        }
+
+        // Verificar umidade do solo
+        if (leitura.UmidadeSolo.HasValue)
+        {
+            if (leitura.UmidadeSolo < 20) return "Alerta - Solo Muito Seco";
+            if (leitura.UmidadeSolo < 30) return "Atenção - Solo Seco";
+            if (leitura.UmidadeSolo > 90) return "Alerta - Solo Encharcado";
+            if (leitura.UmidadeSolo > 80) return "Atenção - Solo Muito Úmido";
+        }
+
+        // Verificar precipitação
+        if (leitura.Precipitacao.HasValue && leitura.Precipitacao > 50)
+        {
+            return "Atenção - Chuva Intensa";
+        }
+
+        return "Normal";
     }
 }

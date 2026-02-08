@@ -13,13 +13,21 @@ public interface IMotorAlertasService
 }
 
 /// <summary>
-/// Evento de dados recebidos de sensor (espelhado do API Sensores)
+/// Evento de dados recebidos de sensor (alinhado com SensorDataReceivedEvent do API Sensores)
 /// </summary>
-public record SensorDataEvent(
-    Guid LeituraId,
-    Guid SensorId,
-    Guid TalhaoId,
-    string TipoLeitura,
-    decimal Valor,
-    DateTime DataLeitura
-);
+public record SensorDataEvent
+{
+    public Guid EventId { get; init; }
+    public DateTime EventDateTime { get; init; }
+    public Guid LeituraId { get; init; }
+    public Guid TalhaoId { get; init; }
+    public Guid? SensorId { get; init; }
+    public string? CodigoSensor { get; init; }
+    public decimal? UmidadeSolo { get; init; }
+    public decimal? Temperatura { get; init; }
+    public decimal? Precipitacao { get; init; }
+    public decimal? UmidadeAr { get; init; }
+    public decimal? VelocidadeVento { get; init; }
+    public decimal? RadiacaoSolar { get; init; }
+    public DateTime DataHoraLeitura { get; init; }
+}
