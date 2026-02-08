@@ -10,14 +10,14 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Tracing
         private static readonly ActivitySource ActivitySource = new("ApiProdutorRuralMonitoramento");
 
         /// <summary>
-        /// Configura OpenTelemetry Distributed Tracing para Games API
+        /// Configura OpenTelemetry Distributed Tracing para API Monitoramento
         /// </summary>
         /// <param name="services">Coleção de serviços</param>
         /// <param name="configuration">Configuração da aplicação</param>
         /// <returns>Coleção de serviços configurada</returns>
         public static IServiceCollection AddDistributedTracing(this IServiceCollection services, IConfiguration configuration)
         {
-            var serviceName = "fiap-games-api";
+            var serviceName = "agro-monitoramento-api";
             var serviceVersion = "1.0.0";
 
             try
@@ -30,12 +30,12 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Tracing
                                 .AddService(serviceName, serviceVersion)
                                 .AddAttributes(new Dictionary<string, object>
                                 {
-                                    ["service.namespace"] = "fiap.postech",
+                                    ["service.namespace"] = "agro.solutions",
                                     ["service.instance.id"] = Environment.MachineName,
                                     ["deployment.environment"] = configuration["ASPNETCORE_ENVIRONMENT"] ?? "Development"
                                 }))
-                            .AddSource("FiapPosTech.*")
-                            .AddSource("Games.*")
+                            .AddSource("AgroSolutions.*")
+                            .AddSource("ProdutorRural.*")
                             .AddAspNetCoreInstrumentation(options =>
                             {
                                 // Filtrar health checks e métricas
@@ -65,7 +65,7 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Tracing
                 // Registrar ActivitySource para injeção de dependência
                 services.AddSingleton(ActivitySource);
 
-                Console.WriteLine("✅ OpenTelemetry configurado com sucesso para Games API");
+                Console.WriteLine("✅ OpenTelemetry configurado com sucesso para API Monitoramento");
             }
             catch (Exception ex)
             {
