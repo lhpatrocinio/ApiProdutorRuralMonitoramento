@@ -1,9 +1,9 @@
 version: '3.4'
-name: ApiProdutorRuralMonitoramento
+name: apiprodutorruralmonitoramento
 services:
-  ProdutorRuralMonitoramento.api:
-    image: ${DOCKER_REGISTRY-}ProdutorRuralMonitoramentoapi
-    container_name: ApiProdutorRuralMonitoramento
+  produtorruralmonitoramento.api:
+    image: ${DOCKER_REGISTRY-}produtorruralmonitoramentoapi
+    container_name: apiprodutorruralmonitoramento
     build:
       context: .
       dockerfile: src/ProdutorRuralMonitoramento.Api/Dockerfile
