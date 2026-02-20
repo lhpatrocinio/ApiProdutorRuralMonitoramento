@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 
 namespace ProdutorRuralMonitoramento.Infrastructure.Messaging;
@@ -15,6 +16,7 @@ public static class RabbitMqSetup
         
         services.AddSingleton<IConnection>(sp =>
         {
+            var logger = sp.GetRequiredService<ILogger<SensorDataConsumer>>();
             var factory = new ConnectionFactory
             {
                 HostName = rabbitMqSection["HostName"] ?? "localhost",
@@ -26,7 +28,18 @@ public static class RabbitMqSetup
                 NetworkRecoveryInterval = TimeSpan.FromSeconds(10)
             };
 
-            return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+            try
+            {
+                logger.LogInformation("Conectando ao RabbitMQ em {Host}:{Port}...", factory.HostName, factory.Port);
+                var connection = Task.Run(() => factory.CreateConnectionAsync()).GetAwaiter().GetResult();
+                logger.LogInformation("Conectado ao RabbitMQ com sucesso!");
+                return connection;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Falha ao conectar ao RabbitMQ em {Host}:{Port}", factory.HostName, factory.Port);
+                throw;
+            }
         });
 
         return services;

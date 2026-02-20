@@ -16,12 +16,12 @@ namespace ProdutorRuralMonitoramento.Infrastructure
             services.AddScoped<IRegraAlertaRepository, RegraAlertaRepository>();
             services.AddScoped<IHistoricoStatusTalhaoRepository, HistoricoStatusTalhaoRepository>();
             
-            // RabbitMQ - TODO: Habilitar quando RabbitMQ estiver rodando
-            // services.AddRabbitMq(configuration);
-            // services.AddSingleton<IAlertaEventPublisher, AlertaCreatedPublisher>();
+            // RabbitMQ
+            services.AddRabbitMq(configuration);
+            services.AddSingleton<IAlertaEventPublisher, AlertaCreatedPublisher>();
             
-            // Background Services - TODO: Habilitar quando RabbitMQ estiver rodando
-            // services.AddHostedService<SensorDataConsumer>();
+            // Background Services
+            services.AddHostedService<SensorDataConsumer>();
         }
     }
 }
