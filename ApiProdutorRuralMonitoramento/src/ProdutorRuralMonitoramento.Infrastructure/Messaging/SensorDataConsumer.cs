@@ -46,11 +46,21 @@ public class SensorDataConsumer : BackgroundService
                 durable: true,
                 autoDelete: false);
 
+            // Declarar queue com os mesmos argumentos usados pela API Sensores (DLX)
+            // Se os argumentos não coincidirem, o RabbitMQ rejeita a declaração com PRECONDITION_FAILED
+            var queueArgs = new Dictionary<string, object?>
+            {
+                { "x-dead-letter-exchange", "agro.events.dlx" },
+                { "x-dead-letter-routing-key", "dead-letter" },
+                { "x-message-ttl", 86400000 } // 24 horas
+            };
+
             await _channel.QueueDeclareAsync(
                 queue: QueueName,
                 durable: true,
                 exclusive: false,
-                autoDelete: false);
+                autoDelete: false,
+                arguments: queueArgs);
 
             await _channel.QueueBindAsync(
                 queue: QueueName,

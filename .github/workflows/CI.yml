@@ -1,0 +1,57 @@
+
+name: CI - Compile, Test, Coverage and Format
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    name: Build, Format Check, Test, and Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restaurar pacotes
+        run: dotnet restore ApiProdutorRuralMonitoramento/src/ProdutorRuralMonitoramento.Api/ProdutorRuralMonitoramento.Api.csproj
+
+      - name: Verificar formatação do código
+        run: dotnet format ApiProdutorRuralMonitoramento/ApiProdutorRuralMonitoramento.sln --verify-no-changes --severity warn --verbosity diag
+
+      - name: Compilar projeto
+        run: dotnet build  ApiProdutorRuralMonitoramento/src/ProdutorRuralMonitoramento.Api/ProdutorRuralMonitoramento.Api.csproj --configuration Release --no-restore
+
+      - name: Executar testes com cobertura
+        run: dotnet test ApiProdutorRuralMonitoramento/tests/ProdutorRuralMonitoramento.Tests/ProdutorRuralMonitoramento.Tests.csproj --configuration Release --collect:"XPlat Code Coverage" --results-directory ./TestResults
+
+      - name: Publicar cobertura com Coverlet (opcional)
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.3.0
+        with:
+          reports: './TestResults/**/coverage.cobertura.xml'
+          targetdir: './CoverageReport'
+          reporttypes: 'HtmlInline;Cobertura'
+
+      - name: Upload de cobertura (para inspeção)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-de-codigo
+          path: ./CoverageReport
+
+      # - name: Notify Slack (descomente e configure o webhook)
+      #   uses: slackapi/slack-github-action@v1.24.0
+      #   with:
+      #     payload: |
+      #       {
+      #         "text": "✅ CI finalizado com sucesso para o projeto Fiap!"
+      #       }
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
