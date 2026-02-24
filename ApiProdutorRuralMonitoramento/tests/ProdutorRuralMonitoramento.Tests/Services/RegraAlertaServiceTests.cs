@@ -119,8 +119,12 @@ public class RegraAlertaServiceTests
 
         var act = async () => await _service.UpdateAsync(Guid.NewGuid(), new RegraAlertaUpdateRequest
         {
-            Nome = "X", Campo = "temperatura", Operador = Operador.Maior, Valor = 1,
-            TipoAlerta = TipoAlerta.Temperatura, Severidade = Severidade.Alta
+            Nome = "X",
+            Campo = "temperatura",
+            Operador = Operador.Maior,
+            Valor = 1,
+            TipoAlerta = TipoAlerta.Temperatura,
+            Severidade = Severidade.Alta
         });
 
         await act.Should().ThrowAsync<KeyNotFoundException>();
