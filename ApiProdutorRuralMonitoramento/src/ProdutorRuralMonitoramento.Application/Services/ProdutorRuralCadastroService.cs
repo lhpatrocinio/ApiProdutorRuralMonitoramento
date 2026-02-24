@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProdutorRuralMonitoramento.Application.Services
 {
-    public class ProdutorRuralMonitoramentoService: IProdutorRuralMonitoramentoService
+    public class ProdutorRuralMonitoramentoService : IProdutorRuralMonitoramentoService
     {
     }
 }

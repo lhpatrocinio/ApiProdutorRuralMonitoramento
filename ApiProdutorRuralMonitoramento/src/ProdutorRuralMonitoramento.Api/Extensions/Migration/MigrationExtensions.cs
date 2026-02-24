@@ -13,7 +13,7 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Migration
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<ApplicationDbContext>>();
-                
+
                 try
                 {
                     // Verifica se há migrações pendentes

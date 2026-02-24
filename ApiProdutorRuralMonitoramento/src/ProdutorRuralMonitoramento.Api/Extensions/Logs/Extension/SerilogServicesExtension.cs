@@ -20,7 +20,7 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Logs.Extension
             {
                 // Configuração básica via arquivo
                 logger.ReadFrom.Configuration(context.Configuration);
-                
+
                 // Configuração de enrichers padronizada
                 logger.Enrich.FromLogContext();
                 logger.Enrich.WithExceptionDetails();
@@ -28,7 +28,7 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Logs.Extension
                 logger.Enrich.WithProperty("service_name", serviceName);
                 logger.Enrich.WithProperty("microservice", serviceName);
                 logger.Enrich.WithProperty("service_port", servicePort);
-                
+
                 // Estratégias múltiplas para conectividade ELK
                 if (TryConfigureTcpSink(logger, serviceName))
                 {
@@ -42,7 +42,7 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Logs.Extension
                 {
                     Console.WriteLine($"ℹ️ {serviceName} running with Console logging only");
                 }
-                
+
                 logger.MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning);
                 logger.MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning);
                 logger.Filter.ByExcluding(c => c.Properties.Any(p => p.Value.ToString().Contains("/ready")));
@@ -65,7 +65,7 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Logs.Extension
             catch (Exception ex)
             {
                 Console.WriteLine($"⚠️ TCP sink (direct IP) failed for {serviceName}: {ex.Message}");
-                
+
                 try
                 {
                     // Estratégia 2: Fallback para host.docker.internal
@@ -93,7 +93,7 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Logs.Extension
             catch (Exception ex)
             {
                 Console.WriteLine($"⚠️ UDP sink (direct IP) failed for {serviceName}: {ex.Message}");
-                
+
                 try
                 {
                     // Estratégia 4: UDP com host.docker.internal

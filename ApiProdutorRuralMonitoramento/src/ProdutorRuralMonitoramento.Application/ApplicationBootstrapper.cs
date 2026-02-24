@@ -20,7 +20,7 @@ namespace ProdutorRuralMonitoramento.Application
             services.AddScoped<IAlertaService, AlertaService>();
             services.AddScoped<IRegraAlertaService, RegraAlertaService>();
             services.AddScoped<IMotorAlertasService, MotorAlertasService>();
-            
+
             // Mock publisher (quando RabbitMQ não está disponível)
             services.AddScoped<IAlertaEventPublisher, MockAlertaEventPublisher>();
         }

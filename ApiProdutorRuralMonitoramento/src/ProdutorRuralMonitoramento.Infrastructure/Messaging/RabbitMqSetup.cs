@@ -12,7 +12,7 @@ public static class RabbitMqSetup
     public static IServiceCollection AddRabbitMq(this IServiceCollection services, IConfiguration configuration)
     {
         var rabbitMqSection = configuration.GetSection("RabbitMQ");
-        
+
         services.AddSingleton<IConnection>(sp =>
         {
             var factory = new ConnectionFactory

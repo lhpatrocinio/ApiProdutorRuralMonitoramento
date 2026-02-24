@@ -61,29 +61,29 @@ public class AlertaService : IAlertaService
     public async Task<IEnumerable<AlertaResponse>> GetByFiltroAsync(Guid produtorId, AlertaFiltroRequest filtro)
     {
         var alertas = await _alertaRepository.GetByProdutorIdAsync(produtorId);
-        
+
         // Aplicar filtros
         if (filtro.TalhaoId.HasValue)
             alertas = alertas.Where(a => a.TalhaoId == filtro.TalhaoId.Value);
-        
+
         if (filtro.TipoAlerta.HasValue)
             alertas = alertas.Where(a => a.TipoAlerta == filtro.TipoAlerta.Value);
-        
+
         if (filtro.Severidade.HasValue)
             alertas = alertas.Where(a => a.Severidade == filtro.Severidade.Value);
-        
+
         if (filtro.ApenasNaoLidos == true)
             alertas = alertas.Where(a => !a.Lido);
-        
+
         if (filtro.ApenasNaoResolvidos == true)
             alertas = alertas.Where(a => !a.Resolvido);
-        
+
         if (filtro.DataInicio.HasValue)
             alertas = alertas.Where(a => a.CreatedAt >= filtro.DataInicio.Value);
-        
+
         if (filtro.DataFim.HasValue)
             alertas = alertas.Where(a => a.CreatedAt <= filtro.DataFim.Value);
-        
+
         return _mapper.Map<IEnumerable<AlertaResponse>>(alertas);
     }
 
@@ -97,7 +97,7 @@ public class AlertaService : IAlertaService
     {
         var alertas = await _alertaRepository.GetByProdutorIdAsync(produtorId);
         var lista = alertas.ToList();
-        
+
         return new AlertaResumoResponse
         {
             ProdutorId = produtorId,
@@ -121,12 +121,12 @@ public class AlertaService : IAlertaService
         var alerta = await _alertaRepository.GetByIdAsync(alertaId);
         if (alerta == null)
             throw new KeyNotFoundException($"Alerta {alertaId} não encontrado");
-        
+
         alerta.MarcarComoLido();
         await _alertaRepository.UpdateAsync(alerta);
-        
+
         _logger.LogInformation("Alerta {AlertaId} marcado como lido", alertaId);
-        
+
         return _mapper.Map<AlertaResponse>(alerta);
     }
 
@@ -141,12 +141,12 @@ public class AlertaService : IAlertaService
         var alerta = await _alertaRepository.GetByIdAsync(alertaId);
         if (alerta == null)
             throw new KeyNotFoundException($"Alerta {alertaId} não encontrado");
-        
+
         alerta.Resolver(resolvidoPor, request.Observacao);
         await _alertaRepository.UpdateAsync(alerta);
-        
+
         _logger.LogInformation("Alerta {AlertaId} resolvido por {ResolvidoPor}", alertaId, resolvidoPor);
-        
+
         return _mapper.Map<AlertaResponse>(alerta);
     }
 

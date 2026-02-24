@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ProdutorRuralMonitoramento.Infrastructure.DataBase.Repository
 {
-    internal class ProdutorRuralMonitoramentoRepository: IProdutorRuralMonitoramentoRepository
+    internal class ProdutorRuralMonitoramentoRepository : IProdutorRuralMonitoramentoRepository
     {
     }
 }

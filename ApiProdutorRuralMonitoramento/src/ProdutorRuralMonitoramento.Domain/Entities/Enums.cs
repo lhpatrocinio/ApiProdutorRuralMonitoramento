@@ -51,10 +51,10 @@ public static class CampoMonitorado
     public const string VelocidadeVento = "velocidade_vento";
     public const string Umidade = "umidade";
     public const string RadiacaoSolar = "radiacao_solar";
-    
+
     public static readonly string[] TodosCampos = new[]
     {
-        UmidadeSolo, Temperatura, Precipitacao, UmidadeAr, 
+        UmidadeSolo, Temperatura, Precipitacao, UmidadeAr,
         VelocidadeVento, Umidade, RadiacaoSolar
     };
 }

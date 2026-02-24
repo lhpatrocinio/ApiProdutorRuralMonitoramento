@@ -22,7 +22,7 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Logs.ELK
         {
             // ELK integration é configurado via Serilog TCP sink
             // Pipeline: Serilog → TCP (port 5044) → Logstash → Elasticsearch → Kibana
-            
+
             // Health check básico adicionado - sem dependency especifica do Logstash
             services.AddHealthChecks();
 
@@ -39,7 +39,7 @@ namespace ProdutorRuralMonitoramento.Api.Extensions.Logs.ELK
             // Middleware para enriquecer logs com contexto ELK
             // Correlation ID já configurado via CorrelationIdMiddleware existente
             // LogRequestActionFilter já captura HTTP request/response dados
-            
+
             return app;
         }
     }

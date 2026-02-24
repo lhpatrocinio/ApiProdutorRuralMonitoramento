@@ -132,7 +132,7 @@ public class SensorDataConsumer : BackgroundService
         };
 
         await motorAlertas.ProcessarLeituraAsync(sensorEvent);
-        
+
         _logger.LogInformation(
             "Leitura processada - TalhaoId: {TalhaoId}, Umidade: {Umidade}%, Temp: {Temp}°C",
             message.TalhaoId, message.UmidadeSolo, message.Temperatura);

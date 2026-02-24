@@ -24,7 +24,7 @@ public class AlertaCreatedPublisher : IAlertaEventPublisher
         _logger = logger;
         _connection = connection;
         _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
-        
+
         // Declarar exchange (Topic para compatibilidade com outros serviços)
         _channel.ExchangeDeclareAsync(
             exchange: ExchangeName,

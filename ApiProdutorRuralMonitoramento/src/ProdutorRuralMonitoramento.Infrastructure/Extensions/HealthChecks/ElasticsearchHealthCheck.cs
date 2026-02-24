@@ -13,16 +13,16 @@ namespace ProdutorRuralMonitoramento.Infrastructure.Extensions.HealthChecks
         }
 
         public async Task<HealthCheckResult> CheckHealthAsync(
-            HealthCheckContext context, 
+            HealthCheckContext context,
             CancellationToken cancellationToken = default)
         {
             try
             {
                 var response = await _client.Cluster.HealthAsync(ct: cancellationToken);
-                
+
                 if (response.IsValid)
                 {
-                    return HealthCheckResult.Healthy("Elasticsearch is healthy", 
+                    return HealthCheckResult.Healthy("Elasticsearch is healthy",
                         new Dictionary<string, object>
                         {
                             ["cluster_name"] = response.ClusterName,
@@ -33,7 +33,7 @@ namespace ProdutorRuralMonitoramento.Infrastructure.Extensions.HealthChecks
                         });
                 }
 
-                return HealthCheckResult.Unhealthy("Elasticsearch is not responding correctly", 
+                return HealthCheckResult.Unhealthy("Elasticsearch is not responding correctly",
                     response.OriginalException);
             }
             catch (Exception ex)

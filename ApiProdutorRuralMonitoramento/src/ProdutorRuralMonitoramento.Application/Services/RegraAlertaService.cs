@@ -67,10 +67,10 @@ public class RegraAlertaService : IRegraAlertaService
         );
 
         await _regraAlertaRepository.AddAsync(regra);
-        
-        _logger.LogInformation("Regra de alerta {RegraId} criada: {RegraName} para produtor {ProdutorId}", 
+
+        _logger.LogInformation("Regra de alerta {RegraId} criada: {RegraName} para produtor {ProdutorId}",
             regra.Id, regra.Nome, produtorId);
-        
+
         return _mapper.Map<RegraAlertaResponse>(regra);
     }
 
@@ -91,9 +91,9 @@ public class RegraAlertaService : IRegraAlertaService
         );
 
         await _regraAlertaRepository.UpdateAsync(regra);
-        
+
         _logger.LogInformation("Regra de alerta {RegraId} atualizada", id);
-        
+
         return _mapper.Map<RegraAlertaResponse>(regra);
     }
 
@@ -104,7 +104,7 @@ public class RegraAlertaService : IRegraAlertaService
             throw new KeyNotFoundException($"Regra de alerta {id} não encontrada");
 
         await _regraAlertaRepository.DeleteAsync(regra);
-        
+
         _logger.LogInformation("Regra de alerta {RegraId} excluída", id);
     }
 
@@ -116,9 +116,9 @@ public class RegraAlertaService : IRegraAlertaService
 
         regra.Ativar();
         await _regraAlertaRepository.UpdateAsync(regra);
-        
+
         _logger.LogInformation("Regra de alerta {RegraId} ativada", id);
-        
+
         return _mapper.Map<RegraAlertaResponse>(regra);
     }
 
@@ -130,9 +130,9 @@ public class RegraAlertaService : IRegraAlertaService
 
         regra.Desativar();
         await _regraAlertaRepository.UpdateAsync(regra);
-        
+
         _logger.LogInformation("Regra de alerta {RegraId} desativada", id);
-        
+
         return _mapper.Map<RegraAlertaResponse>(regra);
     }
 }

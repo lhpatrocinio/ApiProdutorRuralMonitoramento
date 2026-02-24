@@ -43,7 +43,7 @@ public class MotorAlertasService : IMotorAlertasService
         {
             // Buscar regras ativas para o talhão ou globais do produtor
             var regrasAtivas = await _regraAlertaRepository.GetAtivasByTalhaoIdAsync(leitura.TalhaoId);
-            
+
             if (!regrasAtivas.Any())
             {
                 _logger.LogDebug("Nenhuma regra ativa encontrada para o talhão {TalhaoId}", leitura.TalhaoId);
@@ -72,9 +72,9 @@ public class MotorAlertasService : IMotorAlertasService
     /// Processa um campo específico contra as regras aplicáveis
     /// </summary>
     private async Task ProcessarCampoAsync(
-        string nomeCampo, 
-        decimal? valor, 
-        IEnumerable<RegraAlerta> regras, 
+        string nomeCampo,
+        decimal? valor,
+        IEnumerable<RegraAlerta> regras,
         SensorDataEvent leitura)
     {
         if (!valor.HasValue) return;
@@ -139,7 +139,7 @@ public class MotorAlertasService : IMotorAlertasService
         }
 
         var mensagem = GerarMensagemAlerta(regra, campo, valor);
-        
+
         var alerta = new Alerta(
             produtorId: regra.ProdutorId,
             talhaoId: leitura.TalhaoId,
@@ -199,7 +199,7 @@ public class MotorAlertasService : IMotorAlertasService
         };
 
         var campoDescricao = campo.Replace("_", " ").ToLower();
-        
+
         return $"Leitura de {campoDescricao} registrou valor de {valor}{unidade}, " +
                $"que está {operadorDescricao} o limite configurado de {regra.Valor}{unidade}. " +
                $"Regra: {regra.Descricao ?? regra.Nome}";
@@ -214,10 +214,10 @@ public class MotorAlertasService : IMotorAlertasService
         {
             // Determinar o status com base nos valores da leitura
             var status = DeterminarStatusTalhao(leitura);
-            
+
             // Verificar se já existe histórico com mesmo status
             var ultimoHistorico = await _historicoRepository.GetUltimoByTalhaoIdAsync(leitura.TalhaoId);
-            
+
             if (ultimoHistorico?.Status == status)
             {
                 // Mesmo status, não criar novo registro
@@ -225,7 +225,7 @@ public class MotorAlertasService : IMotorAlertasService
             }
 
             var descricao = $"Umidade: {leitura.UmidadeSolo ?? 0}%, Temp: {leitura.Temperatura ?? 0}°C";
-            
+
             var historico = new HistoricoStatusTalhao(
                 talhaoId: leitura.TalhaoId,
                 status: status,
@@ -234,8 +234,8 @@ public class MotorAlertasService : IMotorAlertasService
             );
 
             await _historicoRepository.AddAsync(historico);
-            
-            _logger.LogDebug("Histórico de status atualizado para talhão {TalhaoId}: {Status}", 
+
+            _logger.LogDebug("Histórico de status atualizado para talhão {TalhaoId}: {Status}",
                 leitura.TalhaoId, status);
         }
         catch (Exception ex)

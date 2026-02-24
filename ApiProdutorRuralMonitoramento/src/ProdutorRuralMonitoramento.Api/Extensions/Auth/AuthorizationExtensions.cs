@@ -4,50 +4,50 @@ using System.Text;
 
 namespace ProdutorRuralMonitoramento.Api.Extensions.Auth
 {
-        [ExcludeFromCodeCoverage]
-        public static class AuthorizationExtensions
+    [ExcludeFromCodeCoverage]
+    public static class AuthorizationExtensions
+    {
+        public static IServiceCollection AddAuthorizationExtension(this IServiceCollection services, IConfiguration configure)
         {
-            public static IServiceCollection AddAuthorizationExtension(this IServiceCollection services, IConfiguration configure)
+            var jwtSettings = configure.GetSection("JwtSettings");
+            var key = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
+
+            services.AddAuthentication(options =>
             {
-                var jwtSettings = configure.GetSection("JwtSettings");
-                var key = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]);
-
-                services.AddAuthentication(options =>
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                 {
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                })
-                .AddJwtBearer(options =>
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings["Issuer"],
+                    ValidAudience = jwtSettings["Audience"],
+                    IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(key)
+                };
+                options.Events = new JwtBearerEvents
                 {
-                    options.RequireHttpsMetadata = false;
-                    options.SaveToken = true;
-                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    OnAuthenticationFailed = context =>
                     {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = jwtSettings["Issuer"],
-                        ValidAudience = jwtSettings["Audience"],
-                        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(key)
-                    };
-                    options.Events = new JwtBearerEvents
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
                     {
-                        OnAuthenticationFailed = context =>
-                        {
-                            return Task.CompletedTask;
-                        },
-                        OnTokenValidated = context =>
-                        {
-                            return Task.CompletedTask;
-                        }
-                    };
-                });
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
-                services.AddAuthorization();
+            services.AddAuthorization();
 
-                return services;
-            }
+            return services;
         }
     }
+}
 

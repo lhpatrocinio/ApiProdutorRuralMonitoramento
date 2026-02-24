@@ -34,8 +34,9 @@ namespace ProdutorRuralMonitoramento.Api.Controllers.V1
         [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
         public ActionResult GetStatus()
         {
-            return Ok(new { 
-                status = "online", 
+            return Ok(new
+            {
+                status = "online",
                 api = "API Monitoramento",
                 timestamp = DateTime.UtcNow,
                 version = "1.0"
@@ -65,7 +66,7 @@ namespace ProdutorRuralMonitoramento.Api.Controllers.V1
             var alerta = await _alertaService.GetByIdAsync(id);
             if (alerta == null)
                 return NotFound(new { message = "Alerta não encontrado" });
-            
+
             return Ok(alerta);
         }
 
@@ -217,15 +218,15 @@ namespace ProdutorRuralMonitoramento.Api.Controllers.V1
 
         private Guid GetProdutorId()
         {
-            var produtorIdClaim = User.FindFirst("ProdutorId")?.Value 
+            var produtorIdClaim = User.FindFirst("ProdutorId")?.Value
                 ?? User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+
             if (string.IsNullOrEmpty(produtorIdClaim) || !Guid.TryParse(produtorIdClaim, out var produtorId))
             {
                 // Para desenvolvimento, usar um ID fixo
                 return Guid.Parse("11111111-1111-1111-1111-111111111111");
             }
-            
+
             return produtorId;
         }
     }

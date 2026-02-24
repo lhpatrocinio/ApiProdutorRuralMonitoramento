@@ -133,9 +133,9 @@ public class AlertaRepository : IAlertaRepository
     public async Task<Alerta?> GetNaoResolvidoByRegraETalhaoAsync(Guid regraId, Guid talhaoId)
     {
         return await _context.Alertas
-            .FirstOrDefaultAsync(a => 
-                a.RegraAlertaId == regraId && 
-                a.TalhaoId == talhaoId && 
+            .FirstOrDefaultAsync(a =>
+                a.RegraAlertaId == regraId &&
+                a.TalhaoId == talhaoId &&
                 !a.Resolvido);
     }
 }
